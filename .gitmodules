@@ -1,3 +1,0 @@
-[submodule "extern/antlr4"]
-	path = extern/antlr4
-	url = https://github.com/antlr/antlr4.git
