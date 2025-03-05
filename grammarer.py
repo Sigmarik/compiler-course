@@ -4,4 +4,6 @@ from walker import *
 
 import sys
 
-print(*walk(sys.argv, lambda path: ".g4" in path))
+print(*walk(sys.argv[2:], \
+    lambda path: path.endswith(sys.argv[1]) \
+))

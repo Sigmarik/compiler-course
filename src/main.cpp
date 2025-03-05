@@ -1,3 +1,8 @@
 #include <iostream>
 
-int main(int argc, char **argv) { std::cout << "Hello, world!" << std::endl; }
+#include "parser.y.hpp"
+
+int main() {
+    printf("Enter expressions (Ctrl+D to exit):\n");
+    return yyparse();
+}

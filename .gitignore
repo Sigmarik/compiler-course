@@ -1,5 +1,8 @@
 *.antlr
 __pycache__
 antlr4-gen
+flex-gen
+bison-gen
 objects
 depends
+build
