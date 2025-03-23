@@ -55,6 +55,8 @@ new Expression{BinaryOperator{  \
 %nterm <sequence> sequence
 %nterm <action> action
 %nterm <expression> expr
+%nterm <expression> expr_logics
+%nterm <expression> expr_numeric
 %nterm <variable> variable
 
 %%
@@ -138,12 +140,18 @@ variable:
     ;
 
 expr:
+    expr_logics { $$ = $1; }
+
+expr_logics:
+    expr_numeric { $$ = $1; }
+    | expr_numeric EQUAL expr_numeric { $$ = BINARY_OP(Equal, $1, $3); }
+
+expr_numeric:
     NUMBER { $$ = new Expression{Constant{ $1 }}; }
     | variable { $$ = new Expression{*$1}; }
     | BR_ROUND_OP expr BR_ROUND_CL { $$ = $2; }
-    | expr PLUS expr { $$ = BINARY_OP(Add, $1, $3); }
-    | expr MINUS expr { $$ = BINARY_OP(Subtract, $1, $3); }
-    | expr EQUAL expr { $$ = BINARY_OP(Equal, $1, $3); }
+    | expr_numeric PLUS expr_numeric { $$ = BINARY_OP(Add, $1, $3); }
+    | expr_numeric MINUS expr_numeric { $$ = BINARY_OP(Subtract, $1, $3); }
     ;
 
 %%

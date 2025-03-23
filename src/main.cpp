@@ -2,6 +2,7 @@
 
 #include "ast/ast.hpp"
 #include "ast/global.h"
+#include "ast/visitors/interpreter.h"
 #include "ast/visitors/printer.h"
 #include "parser.y.hpp"
 
@@ -19,7 +20,7 @@ int main(int argc, char** argv) {
     if (root_sequence == nullptr) {
         std::cout << "`root_sequence` is NULL" << std::endl;
     } else {
-        Printer printer;
-        root_sequence->accept(printer);
+        Interpreter visitor;
+        root_sequence->accept(visitor);
     }
 }
