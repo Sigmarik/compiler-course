@@ -1,7 +1,8 @@
 include paths.mk
 
 CXXFLAGS = -I . -I $(FLEX_DIR)/$(GRAM_DIR) -I $(BISON_DIR)/$(GRAM_DIR) \
-	-I $(GRAM_DIR) -I $(SRC_DIR) -isystem $(EXTERN_DIR)/flex/src
+	-I $(GRAM_DIR) -I $(SRC_DIR) -I $(LIB_DIR) -isystem $(EXTERN_DIR)/flex/src
+# -DFLEX_DEBUG_TOKENS
 
 BOLD = \\033[1m
 STYLE_RESET = \\033[0m
@@ -20,9 +21,9 @@ all: $(BLD_DIR)/language
 
 # Yes, it could have been done with makefile alone,
 # but I wanted to see how it would have looked like
-# with python scripts.
+# with python scripts instead.
 SOURCES = $(shell python3 sourcerer.py $(SRC_DIR) \
-	$(LIB_DIR) $(ANTLR_DIR) $(FLEX_DIR) $(BISON_DIR))
+	$(LIB_DIR) $(ANTLR_DIR) $(BISON_DIR) $(FLEX_DIR))
 OBJECTS = $(shell python3 objectifier.py $(OBJ_DIR) .o $(SOURCES))
 DEPENDS = $(shell python3 objectifier.py $(DEP_DIR) .d $(SOURCES))
 
@@ -50,3 +51,6 @@ objects/%.o: %.cpp
 include grammars.mk
 
 clear: clear-grams
+	@rm -rf build
+	@rm -rf depends
+	@rm -rf objects

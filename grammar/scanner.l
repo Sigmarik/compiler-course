@@ -1,18 +1,52 @@
 %{
+#include <stdio.h>
+
+#include <string>
+
+#include "ast/ast.hpp"
+
+#define YY_DECL int yylex()
+
 #include "parser.y.hpp"
+
+#ifdef FLEX_DEBUG_TOKENS
+#define RETURN(something) do { printf("Token " #something "\n"); return something; } while (0)
+#else
+#define RETURN(something) return something
+#endif
 %}
 
 %%
-[0-9]+      { yylval = atoi(yytext); return NUMBER; }
-[ \t]       ;
-\n          { return EOL; }
-"+"         { return PLUS; }
-"-"         { return MINUS; }
+[0-9]+      { yylval.integer = atoi(yytext); RETURN(NUMBER); }
+
+[ \t\n]     ;
+
+";"         { RETURN(EOL); }
+"+"         { RETURN(PLUS); }
+"-"         { RETURN(MINUS); }
+"=="        { RETURN(EQUAL); }
+"="         { RETURN(ASSIGN); }
+"if"        { RETURN(IF); }
+"else"      { RETURN(ELSE); }
+"("         { RETURN(BR_ROUND_OP); }
+")"         { RETURN(BR_ROUND_CL); }
+"{"         { RETURN(BR_CURLY_OP); }
+"}"         { RETURN(BR_CURLY_CL); }
+"print"     { RETURN(PRINT); }
+"declare"   { RETURN(DECL); }
+":"         { RETURN(SEP); }
+"main"      { RETURN(MAIN); }
+
+[a-zA-Z_][a-zA-Z_0-9]* { yylval.string = yytext; RETURN(NAME); }
+
 .           { return yytext[0]; }
 
 %%
 
-// Error handling
 int yywrap() {
-    return 1; // Indicate end of input
+    return 1;
+}
+
+void set_input_file(char* filename) {
+	yyin = fopen(filename, "r");
 }

@@ -14,12 +14,13 @@ flex: $(LEXER_CPPS)
 
 $(BISON_DIR)/%.y.cpp: %.y
 	@mkdir -p $(dir $@)
-	bison -d -o $@ $^
+	@echo $(CYAN) Generating grammar from $^ $(STYLE_RESET)
+	@bison -d -o $@ $^
 
 $(FLEX_DIR)/%.l.cpp: %.l
 	@mkdir -p $(dir $@)
-	flex -o $@ $^
-
+	@echo $(CYAN) Generating lexemes from $^ $(STYLE_RESET)
+	@flex -o $@ $^
 
 clear-grams:
 	rm -rf $(BISON_DIR)
