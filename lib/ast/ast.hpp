@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -7,82 +8,7 @@
 #include <variant>
 #include <vector>
 
-#define ADD_OPERATOR_EQUAL(type) \
-    friend bool operator==(const type& left, const type& right) = default;
-
-template <class T>
-struct Ptr {
-    Ptr(const Ptr<T>& other) { data = new T(*other.data); }
-    Ptr(Ptr<T>&& other) {
-        data = other.data;
-        other.data = nullptr;
-    }
-
-    template <class... Args>
-    Ptr(Args&&... args) {
-        data = new T(std::forward<Args>(args)...);
-    }
-
-    Ptr(T&& other) { data = new T(other); }
-
-    Ptr<T>& operator=(const Ptr<T>& other) {
-        data = new T(*other.data);
-        return *this;
-    }
-
-    Ptr<T>& operator=(Ptr<T>&& other) {
-        data = other.data;
-        return *this;
-    }
-
-    Ptr<T>& operator=(const T& other) {
-        data = new T(other);
-        return *this;
-    }
-
-    Ptr<T>& operator=(T&& other) {
-        data = new T(std::move(other));
-        return *this;
-    }
-
-    ~Ptr() {
-        if (data) delete data;
-        data = nullptr;
-    }
-
-    T& operator*() { return *data; }
-    const T& operator*() const { return *data; }
-
-    T* operator->() { return data; }
-    const T* operator->() const { return data; }
-
-    T&& move() {
-        T* data_copy = data;
-        data = nullptr;
-        return std::move(*data_copy);
-    }
-
-   private:
-    T* data = nullptr;
-};
-
-template <class T>
-struct ChillVector {
-    ChillVector() = default;
-    ChillVector(ChillVector&&) = default;
-    ChillVector<T>& operator=(ChillVector&&) = default;
-
-    void push_back(T&& elem) { data.push_back(new T(std::move(elem))); }
-
-    ~ChillVector() {
-        for (T* elem : data) {
-            delete elem;
-        }
-    }
-
-   private:
-    std::vector<T*> data{};
-};
+struct Sequence;
 
 struct Assignment;
 struct Branch;
@@ -90,62 +16,112 @@ struct Print;
 
 using Action = std::variant<Assignment, Branch, Print>;
 
-struct Sequence {
+struct Constant;
+struct Variable;
+struct BinaryOperator;
+
+using Expression = std::variant<BinaryOperator, Constant, Variable>;
+
+class ASTVisitor {
+   public:
+    virtual void visit(Sequence& node) = 0;
+
+    virtual void visit(Assignment& node) = 0;
+    virtual void visit(Branch& node) = 0;
+    virtual void visit(Print& node) = 0;
+
+    virtual void visit(Constant& node) = 0;
+    virtual void visit(Variable& node) = 0;
+    virtual void visit(BinaryOperator& node) = 0;
+
+    template <class T>
+    void visitVariant(T& variant) {
+        std::visit([this](auto& node) { this->visit(node); }, variant);
+    }
+};
+
+class Visitable {
+    virtual void accept(ASTVisitor& visitor) = 0;
+};
+
+#define DEFAULT_VISIT \
+    virtual void accept(ASTVisitor& visitor) override { visitor.visit(*this); }
+
+struct Sequence : public Visitable {
+    Sequence() = default;
     ~Sequence();
 
     std::vector<Action*> actions{};
+
+    DEFAULT_VISIT
 };
 
 using ExprValueType = int;
 
-struct Variable {
+struct Variable : public Visitable {
+    Variable() = default;
+    Variable(std::string name, ExprValueType* val_ptr)
+        : name(name), value(val_ptr) {}
+
     std::string name{};
     ExprValueType* value{};
+
+    DEFAULT_VISIT
 };
 
-struct Add;
-struct Subtract;
-struct Equal;
-struct Constant;
-struct Variable;
+struct BinaryOperator : public Visitable {
+    enum class Type { None, Add, Subtract, Equal };
+    static const std::map<Type, std::string> kTypeNames;
 
-using Expression = std::variant<Add, Subtract, Equal, Constant, Variable>;
+    BinaryOperator();
+    BinaryOperator(Type type, Expression* left, Expression* right)
+        : type(type), left(left), right(right) {}
 
-struct Add {
+    Type type = Type::None;
+
     Expression* left{};
     Expression* right{};
+
+    DEFAULT_VISIT
 };
 
-struct Subtract {
-    Expression* left{};
-    Expression* right{};
+struct Constant : public Visitable {
+    Constant() = default;
+    Constant(ExprValueType value) : value(value) {}
+
+    ExprValueType value{};
+
+    DEFAULT_VISIT
 };
 
-struct Equal {
-    Expression* left{};
-    Expression* right{};
-};
+struct Assignment : public Visitable {
+    Assignment() = default;
+    Assignment(Variable* var, Expression* expr) : var(var), expr(expr) {}
 
-struct Constant {
-    ExprValueType value;
-};
-
-struct Assignment {
     Variable* var{};
     Expression* expr{};
+
+    DEFAULT_VISIT
 };
 
-struct Branch {
+struct Branch : public Visitable {
+    Branch() = default;
+    Branch(Expression* condition, Sequence* true_br, Sequence* false_br)
+        : condition(condition), true_branch(true_br), false_branch(false_br) {}
+
     Expression* condition{};
 
     Sequence* true_branch{};
     Sequence* false_branch{};
+
+    DEFAULT_VISIT
 };
 
-struct Print {
+struct Print : public Visitable {
+    Print() = default;
+    Print(Expression* expr) : expr(expr) {}
+
     Expression* expr{};
+
+    DEFAULT_VISIT
 };
-
-using NameMap = std::unordered_map<std::string, std::unique_ptr<ExprValueType>>;
-
-extern Sequence* root_sequence;

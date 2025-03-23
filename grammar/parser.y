@@ -7,14 +7,22 @@
     #include <string>
 
     #include "ast/ast.hpp"
+    #include "ast/symbol_table.h"
 
-    static NameMap s_variables;
+    static SymbolTable s_variables;
 
     void yyerror(const char *s);
     int yylex();
 
 #define MOVE_TO_UNIQUE(type, what)\
     std::unique_ptr<type>(new type(std::move(what)))
+
+#define BINARY_OP(tp, lft, rht) \
+new Expression{BinaryOperator{  \
+    BinaryOperator::Type::tp,   \
+    lft,                        \
+    rht                         \
+}}
 }
 %code{
     Sequence* root_sequence = NULL;
@@ -76,33 +84,33 @@ action:
                 + " already exists.";
             yyerror(message.c_str());
         }
-        s_variables[$2] = std::unique_ptr<ExprValueType>(new ExprValueType{0});
+        s_variables[$2] = std::make_unique<ExprValueType>(0);
         $$ = new Action{Assignment{
-            .var = new Variable { .name = $2, .value = s_variables[$2].get() },
-            .expr = $4
+            new Variable($2, s_variables[$2].get()),
+            $4
         }};
         }
     | variable ASSIGN expr EOL {
         $$ = new Action{Assignment {
-            .var = $1,
-            .expr = $3
+            $1,
+            $3
         }};
         }
     | IF BR_ROUND_OP expr BR_ROUND_CL
         BR_CURLY_OP sequence BR_CURLY_CL {
             $$ = new Action{Branch {
-                .condition = $3,
-                .true_branch = $6,
-                .false_branch = new Sequence{}
+                $3,
+                $6,
+                new Sequence{}
             }};
         }
     | IF BR_ROUND_OP expr BR_ROUND_CL 
         BR_CURLY_OP sequence BR_CURLY_CL ELSE
         BR_CURLY_OP sequence BR_CURLY_CL {
             $$ = new Action{Branch {
-                .condition = $3,
-                .true_branch = $6,
-                .false_branch = $10
+                $3,
+                $6,
+                $10
             }};
         }
     | PRINT BR_ROUND_OP expr BR_ROUND_CL EOL {
@@ -114,35 +122,28 @@ variable:
     NAME { 
         if (s_variables.find($1) == s_variables.end()) {
             std::string message = 
-                std::string("Variable ") +
+                std::string("Variable \"") +
                 $1
-                + " does not exist.";
+                + "\" does not exist.";
             yyerror(message.c_str());
+
+            for (auto& [key, value] : s_variables) {
+                printf("Variable - \"%s\"\n", key.c_str());
+            }
         }
         $$ = new Variable{
-        .name = $1,
-        .value = s_variables[$1].get()
+            $1,
+            s_variables[$1].get()
         }; }
     ;
 
 expr:
-    NUMBER { $$ = new Expression{Constant{ .value = $1 }}; }
+    NUMBER { $$ = new Expression{Constant{ $1 }}; }
     | variable { $$ = new Expression{*$1}; }
     | BR_ROUND_OP expr BR_ROUND_CL { $$ = $2; }
-    | expr PLUS expr { $$ = new Expression{Add{
-            .left = $1,
-            .right = $3}}; 
-        }
-    | expr MINUS expr { $$ = new Expression{Subtract{
-            .left = $1,
-            .right = $3}
-            };
-        }
-    | expr EQUAL expr { $$ = new Expression{Equal{
-            .left = $1,
-            .right = $3}
-            };
-        }
+    | expr PLUS expr { $$ = BINARY_OP(Add, $1, $3); }
+    | expr MINUS expr { $$ = BINARY_OP(Subtract, $1, $3); }
+    | expr EQUAL expr { $$ = BINARY_OP(Equal, $1, $3); }
     ;
 
 %%

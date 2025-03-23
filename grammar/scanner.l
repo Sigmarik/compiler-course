@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <string.h>
 
 #include <string>
 
@@ -37,7 +38,7 @@
 ":"         { RETURN(SEP); }
 "main"      { RETURN(MAIN); }
 
-[a-zA-Z_][a-zA-Z_0-9]* { yylval.string = yytext; RETURN(NAME); }
+[a-zA-Z_][a-zA-Z_0-9]* { yylval.string = strdup(yytext); RETURN(NAME); }
 
 .           { return yytext[0]; }
 

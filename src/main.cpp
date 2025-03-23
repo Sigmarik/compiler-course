@@ -1,7 +1,8 @@
 #include <iostream>
 
 #include "ast/ast.hpp"
-#include "global.h"
+#include "ast/global.h"
+#include "ast/visitors/printer.h"
 #include "parser.y.hpp"
 
 int main(int argc, char** argv) {
@@ -17,5 +18,8 @@ int main(int argc, char** argv) {
 
     if (root_sequence == nullptr) {
         std::cout << "`root_sequence` is NULL" << std::endl;
+    } else {
+        Printer printer;
+        root_sequence->accept(printer);
     }
 }
