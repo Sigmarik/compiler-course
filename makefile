@@ -1,8 +1,11 @@
 include paths.mk
 
 CXXFLAGS = -I . -I $(FLEX_DIR)/$(GRAM_DIR) -I $(BISON_DIR)/$(GRAM_DIR) \
-	-I $(GRAM_DIR) -I $(SRC_DIR) -I $(LIB_DIR) -isystem $(EXTERN_DIR)/flex/src
+	-I $(GRAM_DIR) -I $(SRC_DIR) -I $(LIB_DIR) -isystem $(EXTERN_DIR)/flex/src \
+	-isystem /lib/llvm-18/include
 # -DFLEX_DEBUG_TOKENS
+
+LIBRARIES = /lib/llvm-18/lib/libLLVM-18.so
 
 BOLD = \\033[1m
 STYLE_RESET = \\033[0m
@@ -30,7 +33,7 @@ DEPENDS = $(shell python3 objectifier.py $(DEP_DIR) .d $(SOURCES))
 $(BLD_DIR)/language: depend $(OBJECTS)
 	@mkdir -p $(dir $@)
 	@echo $(GREEN)$(BOLD) Linking everything together...$(STYLE_RESET)
-	$(CXX) $(OBJECTS) -o $@
+	$(CXX) $(OBJECTS) $(LIBRARIES) -o $@
 
 run: $(BLD_DIR)/language
 	./$(BLD_DIR)/language

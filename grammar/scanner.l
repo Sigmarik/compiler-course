@@ -22,21 +22,21 @@
 
 [ \t\n]     ;
 
-";"         { RETURN(EOL); }
-"+"         { RETURN(PLUS); }
-"-"         { RETURN(MINUS); }
-"=="        { RETURN(EQUAL); }
-"="         { RETURN(ASSIGN); }
-"if"        { RETURN(IF); }
-"else"      { RETURN(ELSE); }
-"("         { RETURN(BR_ROUND_OP); }
-")"         { RETURN(BR_ROUND_CL); }
-"{"         { RETURN(BR_CURLY_OP); }
-"}"         { RETURN(BR_CURLY_CL); }
-"print"     { RETURN(PRINT); }
-"declare"   { RETURN(DECL); }
-":"         { RETURN(SEP); }
-"main"      { RETURN(MAIN); }
+";"                     { RETURN(EOL); }
+"+"                     { RETURN(PLUS); }
+"-"                     { RETURN(MINUS); }
+"=="                    { RETURN(EQUAL); }
+"="                     { RETURN(ASSIGN); }
+"if"                    { RETURN(IF); }
+"else"                  { RETURN(ELSE); }
+"("                     { RETURN(BR_ROUND_OP); }
+")"                     { RETURN(BR_ROUND_CL); }
+"{"                     { RETURN(BR_CURLY_OP); }
+"}"                     { RETURN(BR_CURLY_CL); }
+"print"                 { RETURN(PRINT); }
+"local"                 { RETURN(DECL); }
+":"                     { RETURN(SEP); }
+"local function main"   { RETURN(MAIN); }
 
 [a-zA-Z_][a-zA-Z_0-9]* { yylval.string = strdup(yytext); RETURN(NAME); }
 

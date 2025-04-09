@@ -14,7 +14,7 @@
     void yyerror(const char *s);
     int yylex();
 
-#define MOVE_TO_UNIQUE(type, what)\
+#define MOVE_TO_UNIQUE(type, what)  \
     std::unique_ptr<type>(new type(std::move(what)))
 
 #define BINARY_OP(tp, lft, rht) \
@@ -78,7 +78,7 @@ sequence: {
     ;
 
 action:
-    DECL NAME SEP expr EOL {
+    DECL NAME ASSIGN expr EOL {
         if (s_variables.find($2) != s_variables.end()) {
             std::string message = 
                 std::string("Could not declare a new variable: name ") +
