@@ -22,7 +22,6 @@
 
 [ \t\n]     ;
 
-";"                     { RETURN(EOL); }
 "+"                     { RETURN(PLUS); }
 "-"                     { RETURN(MINUS); }
 "=="                    { RETURN(EQUAL); }
@@ -34,9 +33,9 @@
 "{"                     { RETURN(BR_CURLY_OP); }
 "}"                     { RETURN(BR_CURLY_CL); }
 "print"                 { RETURN(PRINT); }
-"local"                 { RETURN(DECL); }
-":"                     { RETURN(SEP); }
-"local function main"   { RETURN(MAIN); }
+"function"              { RETURN(FUNCTION); }
+"main"                  { RETURN(MAIN); }
+"local"                 { RETURN(LOCAL); }
 
 [a-zA-Z_][a-zA-Z_0-9]* { yylval.string = strdup(yytext); RETURN(NAME); }
 

@@ -41,15 +41,13 @@ new Expression{BinaryOperator{  \
 
 %token<integer> NUMBER
 %left PLUS MINUS EQUAL ASSIGN
-%token EOL
 
 %token<string> NAME;
 %token IF ELSE
 %token BR_ROUND_OP BR_ROUND_CL BR_CURLY_OP BR_CURLY_CL
 %token PRINT
-%token DECL SEP
 
-%token MAIN
+%token LOCAL FUNCTION MAIN
 
 %nterm <sequence> input
 %nterm <sequence> sequence
@@ -62,11 +60,13 @@ new Expression{BinaryOperator{  \
 %%
 
 input:
-    MAIN BR_CURLY_OP sequence BR_CURLY_CL {
+    main BR_CURLY_OP sequence BR_CURLY_CL {
         $$ = $3;
         root_sequence = $$;
         }
     ;
+
+main: LOCAL FUNCTION MAIN;
 
 sequence: {
         $$ = new Sequence{};
@@ -78,7 +78,7 @@ sequence: {
     ;
 
 action:
-    DECL NAME ASSIGN expr EOL {
+    LOCAL NAME ASSIGN expr {
         if (s_variables.find($2) != s_variables.end()) {
             std::string message = 
                 std::string("Could not declare a new variable: name ") +
@@ -92,7 +92,7 @@ action:
             $4
         }};
         }
-    | variable ASSIGN expr EOL {
+    | variable ASSIGN expr {
         $$ = new Action{Assignment {
             $1,
             $3
@@ -115,7 +115,7 @@ action:
                 $10
             }};
         }
-    | PRINT BR_ROUND_OP expr BR_ROUND_CL EOL {
+    | PRINT BR_ROUND_OP expr BR_ROUND_CL {
             $$ = new Action{Print { $3 }};
         }
     ;
