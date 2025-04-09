@@ -20,7 +20,7 @@
 %%
 [0-9]+      { yylval.integer = atoi(yytext); RETURN(NUMBER); }
 
-[ \t\n]     ;
+[; \t\n]     ;
 
 "+"                     { RETURN(PLUS); }
 "-"                     { RETURN(MINUS); }
