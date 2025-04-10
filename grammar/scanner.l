@@ -21,6 +21,7 @@
 [0-9]+      { yylval.integer = atoi(yytext); RETURN(NUMBER); }
 
 [; \t\n]     ;
+--[^\n]*\n   ;
 
 "+"                     { RETURN(PLUS); }
 "-"                     { RETURN(MINUS); }
