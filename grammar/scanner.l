@@ -5,6 +5,7 @@
 #include <string>
 
 #include "ast/ast.hpp"
+#include "ast/global.h"
 
 #define YY_DECL int yylex()
 
@@ -15,6 +16,19 @@
 #else
 #define RETURN(something) return something
 #endif
+
+#define YY_USER_ACTION \
+    yylloc.first_line = yylloc.last_line; \
+    yylloc.first_column = yylloc.last_column; \
+    for(int i = 0; yytext[i] != '\0'; i++) { \
+        if(yytext[i] == '\n') { \
+            yylloc.last_line++; \
+            yylloc.last_column = 0; \
+        } \
+        else { \
+            yylloc.last_column++; \
+        } \
+    }
 %}
 
 %%
@@ -51,6 +65,8 @@ int yywrap() {
     return 1;
 }
 
-void set_input_file(char* filename) {
+void set_input_file(const char* filename) {
 	yyin = fopen(filename, "r");
+    s_source_file = std::string(filename);
+    /* printf("Opening file %s\n", sFileName.c_str()); */
 }

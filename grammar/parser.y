@@ -1,18 +1,26 @@
 %require "3.5"
 
+%locations
+%define parse.error detailed
+// %define api.pure full
+
 %code requires {
     #include <stdio.h>
     #include <stdlib.h>
 
     #include <string>
+    #include <iostream>
 
     #include "ast/ast.hpp"
     #include "ast/symbol_table.h"
+    #include "ast/global.h"
 
     static SymbolTable s_variables;
 
-    void yyerror(const char *s);
+    void yyerror(char const *msg);
     int yylex();
+
+    extern std::string sFileName;
 
 #define MOVE_TO_UNIQUE(type, what)  \
     std::unique_ptr<type>(new type(std::move(what)))
@@ -39,17 +47,25 @@ new Expression{BinaryOperator{  \
     Variable* variable;
 }
 
-%token<integer> NUMBER
-%left PLUS MINUS EQUAL ASSIGN
+%token<integer> NUMBER "number"
+%left PLUS "+" MINUS "-" EQUAL "==" ASSIGN "="
 
-%token<string> NAME;
-%token IF ELSE
-%token BR_ROUND_OP BR_ROUND_CL BR_CURLY_OP BR_CURLY_CL
-%token PRINT
+%token<string> NAME "name"
+%token IF "if"
+%token ELSE "else"
+%token BR_ROUND_OP "("
+%token BR_ROUND_CL ")"
+%token BR_CURLY_OP "{"
+%token BR_CURLY_CL "}"
+%token PRINT "print"
 
-%token DO THEN END
+%token DO "do"
+%token THEN "then"
+%token END "end"
 
-%token LOCAL FUNCTION MAIN
+%token LOCAL "local"
+%token FUNCTION "function"
+%token MAIN "main"
 
 %nterm <sequence> input
 %nterm <sequence> sequence
@@ -162,6 +178,7 @@ expr_numeric:
 %%
 
 // Error handling function
-void yyerror(const char *s) {
-    fprintf(stderr, "Error: %s\n", s);
+void yyerror(char const *msg) {
+    fprintf(stderr, "Error in %s:%u, column %u: %s\n", s_source_file.c_str(), yylloc.first_line, yylloc.first_column, msg);
+    // fprintf(stderr, "Error: %s\n", msg);
 }
