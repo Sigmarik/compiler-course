@@ -3,6 +3,7 @@
 #include <map>
 
 #include "ast/ast.hpp"
+#include "symbol_resolver.h"
 
 class Interpreter : public ASTVisitor {
    public:
@@ -15,6 +16,7 @@ class Interpreter : public ASTVisitor {
     virtual void visit(BinaryOperator& node) override;
 
    private:
-    ExprValueType m_return{};
-    // TODO: Implement a local memory buffer (or use a one provided by LLVM)
+    int m_return{};
+    std::map<STEntryId, int> m_memory{};
+    // TODO: Implement a local memory buffer (or use one provided by LLVM)
 };

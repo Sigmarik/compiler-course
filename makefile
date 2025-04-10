@@ -2,7 +2,7 @@ include paths.mk
 
 CXXFLAGS = -I . -I $(FLEX_DIR)/$(GRAM_DIR) -I $(BISON_DIR)/$(GRAM_DIR) \
 	-I $(GRAM_DIR) -I $(SRC_DIR) -I $(LIB_DIR) -isystem $(EXTERN_DIR)/flex/src \
-	-isystem /lib/llvm-18/include
+	-isystem /lib/llvm-18/include -ggdb
 # -DFLEX_DEBUG_TOKENS
 
 LIBRARIES = /lib/llvm-18/lib/libLLVM-18.so

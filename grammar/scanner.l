@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include <string>
 
@@ -67,6 +68,7 @@ int yywrap() {
 
 void set_input_file(const char* filename) {
 	yyin = fopen(filename, "r");
+    assert(yyin);
     s_source_file = std::string(filename);
     /* printf("Opening file %s\n", sFileName.c_str()); */
 }

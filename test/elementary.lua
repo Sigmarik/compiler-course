@@ -2,7 +2,8 @@
 local function main() do
     local x = 10
     if x then
-        print(117 + (x - 6))
+        local y = x - 100
+        print(117 + (y - 6))
     else
         print(0)
     end

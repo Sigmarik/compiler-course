@@ -8,6 +8,8 @@
 #include <variant>
 #include <vector>
 
+#include "symbol_table.h"
+
 struct Sequence;
 
 struct Assignment;
@@ -40,14 +42,21 @@ class ASTVisitor {
     }
 };
 
-class Visitable {
+class ASTNode {
+   public:
+    struct Position {
+        unsigned line = 0, column = 0;
+    };
+
+    Position pos{};
+
     virtual void accept(ASTVisitor& visitor) = 0;
 };
 
 #define DEFAULT_VISIT \
     virtual void accept(ASTVisitor& visitor) override { visitor.visit(*this); }
 
-struct Sequence : public Visitable {
+struct Sequence : public ASTNode {
     Sequence() = default;
     ~Sequence();
 
@@ -58,18 +67,17 @@ struct Sequence : public Visitable {
 
 using ExprValueType = int;
 
-struct Variable : public Visitable {
+struct Variable : public ASTNode {
     Variable() = default;
-    Variable(std::string name, ExprValueType* val_ptr)
-        : name(name), value(val_ptr) {}
+    Variable(std::string name, STEntryId entry) : name(name), entry(entry) {}
 
     std::string name{};
-    ExprValueType* value{};
+    STEntryId entry{};
 
     DEFAULT_VISIT
 };
 
-struct BinaryOperator : public Visitable {
+struct BinaryOperator : public ASTNode {
     enum class Type { None, Add, Subtract, Equal };
     static const std::map<Type, std::string> kTypeNames;
 
@@ -85,7 +93,7 @@ struct BinaryOperator : public Visitable {
     DEFAULT_VISIT
 };
 
-struct Constant : public Visitable {
+struct Constant : public ASTNode {
     Constant() = default;
     Constant(ExprValueType value) : value(value) {}
 
@@ -94,7 +102,7 @@ struct Constant : public Visitable {
     DEFAULT_VISIT
 };
 
-struct Assignment : public Visitable {
+struct Assignment : public ASTNode {
     Assignment() = default;
     Assignment(Variable* var, Expression* expr) : var(var), expr(expr) {}
 
@@ -104,7 +112,7 @@ struct Assignment : public Visitable {
     DEFAULT_VISIT
 };
 
-struct Branch : public Visitable {
+struct Branch : public ASTNode {
     Branch() = default;
     Branch(Expression* condition, Sequence* true_br, Sequence* false_br)
         : condition(condition), true_branch(true_br), false_branch(false_br) {}
@@ -117,7 +125,7 @@ struct Branch : public Visitable {
     DEFAULT_VISIT
 };
 
-struct Print : public Visitable {
+struct Print : public ASTNode {
     Print() = default;
     Print(Expression* expr) : expr(expr) {}
 

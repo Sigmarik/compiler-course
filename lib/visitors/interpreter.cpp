@@ -10,7 +10,7 @@ void Interpreter::visit(Sequence& node) {
 
 void Interpreter::visit(Assignment& node) {
     visitVariant(*node.expr);
-    *node.var->value = m_return;
+    m_memory[node.var->entry] = m_return;
 }
 
 void Interpreter::visit(Branch& node) {
@@ -26,7 +26,7 @@ void Interpreter::visit(Print& node) {
 
 void Interpreter::visit(Constant& node) { m_return = node.value; }
 
-void Interpreter::visit(Variable& node) { m_return = *node.value; }
+void Interpreter::visit(Variable& node) { m_return = m_memory[node.entry]; }
 
 void Interpreter::visit(BinaryOperator& node) {
     visitVariant(*node.left);

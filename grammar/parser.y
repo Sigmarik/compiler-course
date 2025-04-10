@@ -12,15 +12,10 @@
     #include <iostream>
 
     #include "ast/ast.hpp"
-    #include "ast/symbol_table.h"
     #include "ast/global.h"
-
-    static SymbolTable s_variables;
 
     void yyerror(char const *msg);
     int yylex();
-
-    extern std::string sFileName;
 
 #define MOVE_TO_UNIQUE(type, what)  \
     std::unique_ptr<type>(new type(std::move(what)))
@@ -100,16 +95,8 @@ sequence: {
 
 action:
     LOCAL NAME ASSIGN expr {
-        if (s_variables.find($2) != s_variables.end()) {
-            std::string message = 
-                std::string("Could not declare a new variable: name ") +
-                $2
-                + " already exists.";
-            yyerror(message.c_str());
-        }
-        s_variables[$2] = std::make_unique<ExprValueType>(0);
         $$ = new Action{Assignment{
-            new Variable($2, s_variables[$2].get()),
+            new Variable($2, 0),
             $4
         }};
         }
@@ -142,22 +129,11 @@ action:
     ;
 
 variable:
-    NAME { 
-        if (s_variables.find($1) == s_variables.end()) {
-            std::string message = 
-                std::string("Variable \"") +
-                $1
-                + "\" does not exist.";
-            yyerror(message.c_str());
-
-            for (auto& [key, value] : s_variables) {
-                printf("Variable - \"%s\"\n", key.c_str());
-            }
+    NAME {
+        $$ = new Variable{$1, 0}; 
+        $$->pos.line = yylloc.first_line;
+        $$->pos.column = yylloc.first_column;
         }
-        $$ = new Variable{
-            $1,
-            s_variables[$1].get()
-        }; }
     ;
 
 expr:

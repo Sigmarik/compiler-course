@@ -1,5 +1,6 @@
 *.antlr
 __pycache__
+.vscode
 antlr4-gen
 flex-gen
 bison-gen

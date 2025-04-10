@@ -5,6 +5,7 @@
 #include "parser.y.hpp"
 #include "visitors/interpreter.h"
 #include "visitors/printer.h"
+#include "visitors/symbol_resolver.h"
 
 int main(int argc, char** argv) {
     // TODO: Replace with actual argument parsing
@@ -20,6 +21,9 @@ int main(int argc, char** argv) {
     if (root_sequence == nullptr) {
         std::cout << "`root_sequence` is NULL" << std::endl;
     } else {
+        SymbolResolveVisitor symbolResolver;
+        root_sequence->accept(symbolResolver);
+
         Interpreter visitor;
         root_sequence->accept(visitor);
     }
