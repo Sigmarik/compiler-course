@@ -21,6 +21,7 @@
 [0-9]+      { yylval.integer = atoi(yytext); RETURN(NUMBER); }
 
 [; \t\n]     ;
+--[^\n]*\n   ;
 
 "+"                     { RETURN(PLUS); }
 "-"                     { RETURN(MINUS); }
@@ -32,6 +33,9 @@
 ")"                     { RETURN(BR_ROUND_CL); }
 "{"                     { RETURN(BR_CURLY_OP); }
 "}"                     { RETURN(BR_CURLY_CL); }
+"do"                    { RETURN(DO); }
+"then"                  { RETURN(THEN); }
+"end"                   { RETURN(END); }
 "print"                 { RETURN(PRINT); }
 "function"              { RETURN(FUNCTION); }
 "main"                  { RETURN(MAIN); }

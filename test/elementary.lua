@@ -1,4 +1,9 @@
-local function main {
+-- This is a comment
+local function main() do
     local x = 10
-    print(117 + (x - 6))
-}
+    if x then
+        print(117 + (x - 6))
+    else
+        print(0)
+    end
+end

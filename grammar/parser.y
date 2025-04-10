@@ -47,6 +47,8 @@ new Expression{BinaryOperator{  \
 %token BR_ROUND_OP BR_ROUND_CL BR_CURLY_OP BR_CURLY_CL
 %token PRINT
 
+%token DO THEN END
+
 %token LOCAL FUNCTION MAIN
 
 %nterm <sequence> input
@@ -60,13 +62,16 @@ new Expression{BinaryOperator{  \
 %%
 
 input:
-    main BR_CURLY_OP sequence BR_CURLY_CL {
+    main opt_do sequence END {
         $$ = $3;
         root_sequence = $$;
         }
     ;
 
-main: LOCAL FUNCTION MAIN;
+main: LOCAL FUNCTION MAIN BR_ROUND_OP BR_ROUND_CL;
+
+opt_do:
+    | DO
 
 sequence: {
         $$ = new Sequence{};
@@ -98,21 +103,21 @@ action:
             $3
         }};
         }
-    | IF BR_ROUND_OP expr BR_ROUND_CL
-        BR_CURLY_OP sequence BR_CURLY_CL {
+    | IF expr
+        THEN sequence END {
             $$ = new Action{Branch {
-                $3,
-                $6,
+                $2,
+                $4,
                 new Sequence{}
             }};
         }
-    | IF BR_ROUND_OP expr BR_ROUND_CL 
-        BR_CURLY_OP sequence BR_CURLY_CL ELSE
-        BR_CURLY_OP sequence BR_CURLY_CL {
+    | IF expr 
+        THEN sequence ELSE
+        sequence END {
             $$ = new Action{Branch {
-                $3,
-                $6,
-                $10
+                $2,
+                $4,
+                $6
             }};
         }
     | PRINT BR_ROUND_OP expr BR_ROUND_CL {
