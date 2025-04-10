@@ -2,9 +2,9 @@
 
 #include "ast/ast.hpp"
 #include "ast/global.h"
-#include "ast/visitors/interpreter.h"
-#include "ast/visitors/printer.h"
 #include "parser.y.hpp"
+#include "visitors/interpreter.h"
+#include "visitors/printer.h"
 
 int main(int argc, char** argv) {
     // TODO: Replace with actual argument parsing
