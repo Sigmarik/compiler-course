@@ -2,9 +2,12 @@
 local function main() do
     local x = 10
     if x then
-        local y = x - 100
-        print(117 + (y - 6))
+        -- Declarations without `local` are fine, too.
+        y = x - 100
+        print(138 + (y - 6))
     else
         print(0)
     end
+
+    -- print(y - 1)
 end
