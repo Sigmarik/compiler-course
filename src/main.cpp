@@ -4,6 +4,7 @@
 #include "ast/global.h"
 #include "parser.y.hpp"
 #include "visitors/interpreter.h"
+#include "visitors/ir_builder.h"
 #include "visitors/printer.h"
 #include "visitors/symbol_resolver.h"
 
@@ -12,6 +13,10 @@ int main(int argc, char** argv) {
     if (argc > 1) {
         set_input_file(argv[1]);
     }
+
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmParser();
+    llvm::InitializeNativeTargetAsmPrinter();
 
     int status = yyparse();
     if (status) {
@@ -24,7 +29,8 @@ int main(int argc, char** argv) {
         SymbolResolveVisitor symbolResolver;
         root_sequence->accept(symbolResolver);
 
-        Interpreter visitor;
+        LLVMIRBuilder visitor(symbolResolver.getSymbols());
         root_sequence->accept(visitor);
+        visitor.getModule().dump();
     }
 }

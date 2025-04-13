@@ -1,5 +1,7 @@
 #include "printer.h"
 
+#include <assert.h>
+
 #include <iostream>
 
 static void indent(unsigned count) {
@@ -13,6 +15,7 @@ void Printer::visit(Sequence& node) {
     std::cout << "Sequence:\n";
     ++m_indentation;
     for (Action* action : node.actions) {
+        assert(action);
         visitVariant(*action);
     }
     --m_indentation;
@@ -25,6 +28,7 @@ void Printer::visit(Assignment& node) {
     node.var->accept(*this);
     indent(m_indentation - 1);
     std::cout << "to\n";
+    assert(node.expr);
     visitVariant(*node.expr);
     --m_indentation;
 }
@@ -33,6 +37,7 @@ void Printer::visit(Branch& node) {
     indent(m_indentation);
     std::cout << "If\n";
     ++m_indentation;
+    assert(node.condition);
     visitVariant(*node.condition);
     indent(m_indentation - 1);
     std::cout << "Then\n";
@@ -48,6 +53,7 @@ void Printer::visit(Print& node) {
     indent(m_indentation);
     std::cout << "Print\n";
     ++m_indentation;
+    assert(node.expr);
     visitVariant(*node.expr);
     --m_indentation;
 }

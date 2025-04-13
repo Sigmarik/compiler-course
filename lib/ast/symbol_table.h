@@ -10,6 +10,10 @@
 using STEntryId = uint64_t;
 using STContext = std::vector<std::string>;
 
+enum class DataType {
+    Int = 0,
+};
+
 template <class AssociatedData>
 class SymbolTable {
    public:
@@ -21,6 +25,9 @@ class SymbolTable {
     STEntryId find(const STContext& context, const std::string& name);
     AssociatedData* get(const STContext& context, const std::string& name);
     AssociatedData* get(STEntryId id);
+
+    template <class F>
+    void forEachEntry(F&& func);
 
    private:
     struct Cell {
@@ -144,4 +151,12 @@ inline std::string SymbolTable<AssociatedData>::translateContext(
     identifier += name;
 
     return identifier;
+}
+
+template <class AssociatedData>
+template <class F>
+inline void SymbolTable<AssociatedData>::forEachEntry(F&& func) {
+    for (Cell& cell : m_entries) {
+        func(cell.entry, cell.data);
+    }
 }

@@ -16,9 +16,18 @@ void SymbolResolveVisitor::visit(Assignment& node) {
     visitVariant(*node.expr);
 
     // I treat all variable declarations as auto-s for compatibility with LUA.
-    m_table.getOrRegister(m_context, node.var->name, DataType(m_current_type));
+    STEntryId id = m_table.getOrRegister(m_context, node.var->name,
+                                         DataType(m_current_type));
+    DataType type = *m_table.get(id);
 
-    // This is going to be soo much more painful when I add untyped functions...
+    if (type != m_current_type) {
+        fail();
+        error(node.var->pos.line, node.var->pos.column,
+              "Cannot assign a value of different type to a variable");
+    }
+
+    // This is going to be soo much more painful when I add type deduction for
+    // functions...
     node.var->accept(*this);
 }
 
@@ -46,6 +55,7 @@ void SymbolResolveVisitor::visit(Constant& node) {
 
 void SymbolResolveVisitor::visit(Variable& node) {
     node.entry = m_table.findHereOrLower(m_context, node.name);
+    node.type = *m_table.get(node.entry);
 
     if (!node.entry) {
         fail();

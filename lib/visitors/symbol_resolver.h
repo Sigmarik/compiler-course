@@ -3,10 +3,6 @@
 #include "ast/ast.hpp"
 #include "ast/symbol_table.h"
 
-enum class DataType {
-    Int = 0,
-};
-
 class SymbolResolveVisitor : public ASTVisitor {
    public:
     virtual void visit(Sequence& node) override;

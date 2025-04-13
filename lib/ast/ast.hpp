@@ -73,6 +73,7 @@ struct Variable : public ASTNode {
 
     std::string name{};
     STEntryId entry{};
+    DataType type = DataType::Int;
 
     DEFAULT_VISIT
 };
