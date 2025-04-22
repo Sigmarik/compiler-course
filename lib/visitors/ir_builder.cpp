@@ -29,7 +29,7 @@ void LLVMIRBuilder::visit(Assignment& node) {
 
     static auto int_type = llvm::Type::getInt32Ty(m_context);
 
-    STEntryId id = node.var->entry;
+    SymbolId id = node.var->entry;
 
     if (m_variables.find(id) == m_variables.end()) {
         m_variables[id] = m_builder.CreateAlloca(int_type);

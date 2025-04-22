@@ -29,8 +29,15 @@ int main(int argc, char** argv) {
         SymbolResolveVisitor symbolResolver;
         root_sequence->accept(symbolResolver);
 
-        LLVMIRBuilder visitor(symbolResolver.getSymbols());
-        root_sequence->accept(visitor);
-        visitor.getModule().dump();
+        {
+            LLVMIRBuilder visitor(symbolResolver.getTypes());
+            root_sequence->accept(visitor);
+            visitor.getModule().dump();
+        }
+
+        {
+            Interpreter visitor;
+            root_sequence->accept(visitor);
+        }
     }
 }

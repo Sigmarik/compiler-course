@@ -1,5 +1,7 @@
 #include "symbol_resolver.h"
 
+#include <assert.h>
+
 #include <iomanip>
 #include <iostream>
 
@@ -16,9 +18,15 @@ void SymbolResolveVisitor::visit(Assignment& node) {
     visitVariant(*node.expr);
 
     // I treat all variable declarations as auto-s for compatibility with LUA.
-    STEntryId id = m_table.getOrRegister(m_context, node.var->name,
-                                         DataType(m_current_type));
-    DataType type = *m_table.get(id);
+    SymbolId id = findOrCreate(node.var->name);
+
+    DataType type = DataType::Int;
+    if (m_types.find(id) != m_types.end()) {
+        type = m_types[id];
+    } else {
+        type = m_current_type;
+        m_types[id] = type;
+    }
 
     if (type != m_current_type) {
         fail();
@@ -37,14 +45,13 @@ void SymbolResolveVisitor::visit(Branch& node) {
 
     visitVariant(*node.condition);
 
-    m_context.push_back((std::stringstream{} << "brn_true" << branch_id).str());
+    enterScope((std::stringstream{} << "brn_true" << branch_id).str());
     if (node.true_branch) node.true_branch->accept(*this);
-    m_context.pop_back();
+    exitScope();
 
-    m_context.push_back(
-        (std::stringstream{} << "brn_false" << branch_id).str());
+    enterScope((std::stringstream{} << "brn_false" << branch_id).str());
     if (node.false_branch) node.false_branch->accept(*this);
-    m_context.pop_back();
+    exitScope();
 }
 
 void SymbolResolveVisitor::visit(Print& node) { visitVariant(*node.expr); }
@@ -54,18 +61,17 @@ void SymbolResolveVisitor::visit(Constant& node) {
 }
 
 void SymbolResolveVisitor::visit(Variable& node) {
-    node.entry = m_table.findHereOrLower(m_context, node.name);
-    node.type = *m_table.get(node.entry);
-
-    if (!node.entry) {
+    node.entry = findOrCreate(node.name);
+    if (m_types.find(node.entry) == m_types.end()) {
         fail();
         error(
             node.pos.line, node.pos.column,
             (std::stringstream{} << "Unknown symbol " << std::quoted(node.name))
                 .str());
+        return;
     }
 
-    m_current_type = *m_table.get(node.entry);
+    m_current_type = m_types[node.entry];
 }
 
 void SymbolResolveVisitor::visit(BinaryOperator& node) {
@@ -83,6 +89,40 @@ void SymbolResolveVisitor::visit(BinaryOperator& node) {
     }
 
     m_current_type = right_type;
+}
+
+SymbolId SymbolResolveVisitor::findOrCreate(const std::string& name) {
+    for (auto it = m_symbol_table.rbegin(); it != m_symbol_table.rend(); ++it) {
+        if (it->count(name)) {
+            return (*it)[name];
+        }
+    }
+
+    SymbolId newId = ++m_highest_id;
+    m_symbol_table.back().emplace(name, newId);
+    return newId;
+}
+
+void SymbolResolveVisitor::enterScope(const std::string& scopeName) {
+    m_scope_layers.push_back(scopeName);
+    m_symbol_table.emplace_back();
+}
+
+void SymbolResolveVisitor::exitScope() {
+    assert(!m_symbol_table.empty());
+    m_symbol_table.pop_back();
+    m_scope_layers.pop_back();
+}
+
+std::string SymbolResolveVisitor::getFullScopeName() const {
+    std::string fullScope;
+    for (const auto& layer : m_scope_layers) {
+        if (!fullScope.empty()) {
+            fullScope += "::";
+        }
+        fullScope += layer;
+    }
+    return fullScope;
 }
 
 void error(unsigned line, unsigned column, std::string msg) {

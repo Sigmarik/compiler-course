@@ -1,7 +1,12 @@
 #pragma once
 
+#include <deque>
+
 #include "ast/ast.hpp"
 #include "ast/symbol_table.h"
+
+//* Symbol resolve visitor is also a type resolver, since functions can
+//* "duplicate" depending on their argument's type.
 
 class SymbolResolveVisitor : public ASTVisitor {
    public:
@@ -13,19 +18,26 @@ class SymbolResolveVisitor : public ASTVisitor {
     virtual void visit(Variable& node) override;
     virtual void visit(BinaryOperator& node) override;
 
-    using TableT = SymbolTable<DataType>;
-    TableT getSymbols() const { return m_table; }
-
     bool successful() const { return !m_failed; }
+
+    const SymbolTable<DataType>& getTypes() const { return m_types; }
 
    private:
     void fail() { m_failed = true; }
 
-   protected:
-    TableT m_table{};
-
    private:
+    SymbolId findOrCreate(const std::string& name);
+
+    void enterScope(const std::string& scopeName);
+    void exitScope();
+
+    std::string getFullScopeName() const;
+
     bool m_failed = false;
-    STContext m_context{};
+
+    SymbolId m_highest_id = 0;
     DataType m_current_type = DataType::Int;
+    std::deque<std::unordered_map<std::string, SymbolId>> m_symbol_table{{}};
+    SymbolTable<DataType> m_types{};
+    std::deque<std::string> m_scope_layers{};
 };

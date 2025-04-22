@@ -17,6 +17,6 @@ class Interpreter : public ASTVisitor {
 
    private:
     int m_return{};
-    std::map<STEntryId, int> m_memory{};
+    SymbolTable<int> m_memory{};
     // TODO: Implement a local memory buffer (or use one provided by LLVM)
 };

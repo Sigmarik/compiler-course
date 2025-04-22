@@ -69,11 +69,10 @@ using ExprValueType = int;
 
 struct Variable : public ASTNode {
     Variable() = default;
-    Variable(std::string name, STEntryId entry) : name(name), entry(entry) {}
+    Variable(std::string name) : name(name) {}
 
     std::string name{};
-    STEntryId entry{};
-    DataType type = DataType::Int;
+    SymbolId entry{};
 
     DEFAULT_VISIT
 };

@@ -40,5 +40,5 @@ class LLVMIRBuilder : public ASTVisitor {
     llvm::Function* m_main = nullptr;
     llvm::BasicBlock* m_current_block = nullptr;
     llvm::Value* m_value = nullptr;
-    std::map<STEntryId, llvm::AllocaInst*> m_variables;
+    SymbolTable<llvm::AllocaInst*> m_variables;
 };

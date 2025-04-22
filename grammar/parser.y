@@ -96,7 +96,7 @@ sequence: {
 action:
     LOCAL NAME ASSIGN expr {
         $$ = new Action{Assignment{
-            new Variable($2, 0),
+            new Variable($2),
             $4
         }};
         }
@@ -130,7 +130,7 @@ action:
 
 variable:
     NAME {
-        $$ = new Variable{$1, 0}; 
+        $$ = new Variable{$1};
         $$->pos.line = yylloc.first_line;
         $$->pos.column = yylloc.first_column;
         }
