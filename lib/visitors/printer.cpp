@@ -10,6 +10,51 @@ static void indent(unsigned count) {
     }
 }
 
+void Printer::visit(Module& node) {
+    indent(m_indentation);
+    std::cout << "Module functions:\n";
+    ++m_indentation;
+    for (Function* func : node.functions) {
+        func->accept(*this);
+    }
+    --m_indentation;
+    indent(m_indentation);
+    std::cout << "Module templates:\n";
+    ++m_indentation;
+    for (FunctionTemplate* templ : node.templates) {
+        visit(*templ);
+    }
+}
+
+void Printer::visit(Function& node) {
+    indent(m_indentation);
+    std::cout << "Function " << node.name << ":\n";
+    indent(m_indentation);
+    std::cout << "Params:\n";
+    ++m_indentation;
+    for (Variable* var : node.parameters) {
+        var->accept(*this);
+    }
+    --m_indentation;
+
+    node.body->accept(*this);
+}
+
+void Printer::visit(FunctionTemplate& node) {
+    indent(m_indentation);
+    std::cout << "Function Template " << node.name << ":\n";
+    indent(m_indentation);
+    std::cout << "Params:\n";
+    ++m_indentation;
+    for (const std::string& par : node.paramNames) {
+        indent(m_indentation);
+        std::cout << par << "\n";
+    }
+    --m_indentation;
+
+    node.body->accept(*this);
+}
+
 void Printer::visit(Sequence& node) {
     indent(m_indentation);
     std::cout << "Sequence:\n";
@@ -55,6 +100,24 @@ void Printer::visit(Print& node) {
     ++m_indentation;
     assert(node.expr);
     visitVariant(*node.expr);
+    --m_indentation;
+}
+
+void Printer::visit(Return& node) {
+    indent(m_indentation);
+    std::cout << "Return\n";
+    visitVariant(*node.expression);
+}
+
+void Printer::visit(FunctionCall& node) {
+    indent(m_indentation);
+    std::cout << "Call " << node.name << "\n";
+    indent(m_indentation);
+    std::cout << "Arguments:\n";
+    ++m_indentation;
+    for (Expression* arg : node.arguments) {
+        visitVariant(*arg);
+    }
     --m_indentation;
 }
 

@@ -1,3 +1,7 @@
+-- local function add1(x) do
+--     return x + 1
+-- end
+
 -- This is a comment
 local function main() do
     local x = 10

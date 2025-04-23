@@ -35,12 +35,20 @@ int main(int argc, char** argv) {
         // }
 
         {
-            LLVMIRBuilder visitor(symbolResolver.getTypes());
-            root_sequence->accept(visitor);
-            visitor.finish();
-            visitor.getModule().print(llvm::outs(), nullptr);
+            Printer printer;
+            root_sequence->accept(printer);
         }
 
+        // {
+        //     LLVMIRBuilder visitor(symbolResolver.getTypes());
+        //     root_sequence->accept(visitor);
+        //     visitor.getModule().dump();
+        // }
+
+        // {
+        //     Interpreter visitor;
+        //     root_sequence->accept(visitor);
+        // }
         // {
         //     Interpreter visitor;
         //     root_sequence->accept(visitor);
