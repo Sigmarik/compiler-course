@@ -1,13 +1,13 @@
--- local function add1(x) do
---     return x + 1
--- end
+local function add1(x) do
+    return x + 1
+end
 
 -- This is a comment
-local function main() do
+function main() do
     local x = 10
     if x then
         -- Declarations without `local` are fine, too.
-        y = x - 100
+        y = x - add1(99)
         print(138 + (y - 6))
     else
         print(0)
