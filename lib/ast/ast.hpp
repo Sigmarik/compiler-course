@@ -12,26 +12,36 @@
 
 struct Sequence;
 
+struct Function;
+struct Module;
+
 struct Assignment;
 struct Branch;
 struct Print;
+struct Return;
 
-using Action = std::variant<Assignment, Branch, Print>;
-
+struct FunctionCall;
 struct Constant;
 struct Variable;
 struct BinaryOperator;
 
-using Expression = std::variant<BinaryOperator, Constant, Variable>;
+using Expression =
+    std::variant<BinaryOperator, Constant, Variable, FunctionCall>;
+
+using Action = std::variant<Assignment, Branch, Print, FunctionCall, Return>;
 
 class ASTVisitor {
    public:
+    virtual void visit(Module& node) = 0;
+    virtual void visit(Function& node) = 0;
     virtual void visit(Sequence& node) = 0;
 
     virtual void visit(Assignment& node) = 0;
     virtual void visit(Branch& node) = 0;
     virtual void visit(Print& node) = 0;
+    virtual void visit(Return& node) = 0;
 
+    virtual void visit(FunctionCall& node) = 0;
     virtual void visit(Constant& node) = 0;
     virtual void visit(Variable& node) = 0;
     virtual void visit(BinaryOperator& node) = 0;
@@ -56,11 +66,60 @@ class ASTNode {
 #define DEFAULT_VISIT \
     virtual void accept(ASTVisitor& visitor) override { visitor.visit(*this); }
 
+struct FunctionTemplate;
+
+struct Module : public ASTNode {
+    std::vector<Function*> functions{};
+    std::vector<FunctionTemplate*> templates{};
+
+    Function* main = nullptr;
+
+    DEFAULT_VISIT
+};
+
+struct FunctionTemplate : public ASTNode {
+    FunctionTemplate() = default;
+
+    Sequence* body = nullptr;
+
+    std::vector<std::string> paramNames{};
+    std::string name{};
+    SymbolId entry = 0;
+};
+
+struct Function : public ASTNode {
+    Function() = default;
+
+    std::vector<Variable*> parameters{};
+    Sequence* body = nullptr;
+
+    std::string name{};
+    SymbolId entry = 0;
+
+    DEFAULT_VISIT
+};
+
 struct Sequence : public ASTNode {
     Sequence() = default;
     ~Sequence();
 
     std::vector<Action*> actions{};
+
+    DEFAULT_VISIT
+};
+
+struct Return : public ASTNode {
+    Return() = default;
+    Return(Expression* expr) : expression(expr) {}
+
+    Expression* expression = nullptr;
+
+    DEFAULT_VISIT
+};
+
+struct FunctionCall : public ASTNode {
+    std::string name = "";
+    std::vector<Expression*> arguments{};
 
     DEFAULT_VISIT
 };

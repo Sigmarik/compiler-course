@@ -30,14 +30,19 @@ int main(int argc, char** argv) {
         root_sequence->accept(symbolResolver);
 
         {
-            LLVMIRBuilder visitor(symbolResolver.getTypes());
-            root_sequence->accept(visitor);
-            visitor.getModule().dump();
+            Printer printer;
+            root_sequence->accept(printer);
         }
 
-        {
-            Interpreter visitor;
-            root_sequence->accept(visitor);
-        }
+        // {
+        //     LLVMIRBuilder visitor(symbolResolver.getTypes());
+        //     root_sequence->accept(visitor);
+        //     visitor.getModule().dump();
+        // }
+
+        // {
+        //     Interpreter visitor;
+        //     root_sequence->accept(visitor);
+        // }
     }
 }
