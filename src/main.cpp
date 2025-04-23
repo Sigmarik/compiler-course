@@ -23,11 +23,11 @@ int main(int argc, char** argv) {
         std::cout << "Failed to parse the file." << std::endl;
     }
 
-    if (root_sequence == nullptr) {
-        std::cout << "`root_sequence` is NULL" << std::endl;
+    if (root_module == nullptr) {
+        std::cout << "`root_module` is NULL" << std::endl;
     } else {
         SymbolResolveVisitor symbolResolver;
-        root_sequence->accept(symbolResolver);
+        root_module->accept(symbolResolver);
 
         // {
         //     Printer printer;
@@ -36,18 +36,18 @@ int main(int argc, char** argv) {
 
         {
             Printer printer;
-            root_sequence->accept(printer);
+            root_module->accept(printer);
         }
 
         // {
         //     LLVMIRBuilder visitor(symbolResolver.getTypes());
-        //     root_sequence->accept(visitor);
+        //     root_module->accept(visitor);
         //     visitor.getModule().dump();
         // }
 
         // {
         //     Interpreter visitor;
-        //     root_sequence->accept(visitor);
+        //     root_module->accept(visitor);
         // }
         // {
         //     Interpreter visitor;

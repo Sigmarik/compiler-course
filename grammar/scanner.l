@@ -53,8 +53,9 @@
 "end"                   { RETURN(END); }
 "print"                 { RETURN(PRINT); }
 "function"              { RETURN(FUNCTION); }
-"main"                  { RETURN(MAIN); }
 "local"                 { RETURN(LOCAL); }
+"return"                { RETURN(RETURN); }
+","                     { RETURN(COMMA); }
 
 [a-zA-Z_][a-zA-Z_0-9]* { yylval.string = strdup(yytext); RETURN(NAME); }
 

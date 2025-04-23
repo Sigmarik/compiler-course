@@ -28,7 +28,7 @@ new Expression{BinaryOperator{  \
 }}
 }
 %code{
-    Sequence* root_sequence = NULL;
+    Module* root_module = NULL;
 }
 
 %defines
@@ -36,6 +36,9 @@ new Expression{BinaryOperator{  \
     int integer;
     const char* string;
 
+    Module* module;
+    FunctionTemplate* function;
+    FunctionCall* call;
     Sequence* sequence;
     Action* action;
     Expression* expression;
@@ -54,6 +57,8 @@ new Expression{BinaryOperator{  \
 %token BR_CURLY_CL "}"
 %token PRINT "print"
 
+%token COMMA ","
+
 %token DO "do"
 %token THEN "then"
 %token END "end"
@@ -62,24 +67,62 @@ new Expression{BinaryOperator{  \
 %token FUNCTION "function"
 %token MAIN "main"
 
-%nterm <sequence> input
-%nterm <sequence> sequence
-%nterm <action> action
-%nterm <expression> expr
-%nterm <expression> expr_logics
-%nterm <expression> expr_numeric
-%nterm <variable> variable
+%token RETURN "return"
+
+%type <module> module
+%type <function> func_decl
+%type <function> func_decl_left
+%type <function> pure_func_decl
+
+%type <call> function_call_left
+%type <call> call
+
+%type <sequence> input
+%type <sequence> sequence
+%type <action> action
+%type <expression> expr
+%type <expression> expr_logics
+%type <expression> expr_numeric
+%type <variable> variable
 
 %%
 
-input:
-    main opt_do sequence END {
-        $$ = $3;
-        root_sequence = $$;
-        }
-    ;
+input: module { root_module = $1; }
 
-main: LOCAL FUNCTION MAIN BR_ROUND_OP BR_ROUND_CL;
+module: {
+        $$ = new Module();
+    }
+    | module func_decl {
+        $$ = $1;
+        $$->templates.push_back($2);
+    }
+
+func_decl: func_decl_left BR_ROUND_CL opt_do sequence END {
+        $$ = $1;
+        $$->body = $4;
+    }
+    | pure_func_decl opt_do sequence END {
+        $$ = $1;
+        $$->body = $3;
+    }
+
+pure_func_decl: optional_local FUNCTION NAME BR_ROUND_OP BR_ROUND_CL {
+        $$ = new FunctionTemplate();
+        $$->name = $3;
+    }
+
+func_decl_left: optional_local FUNCTION NAME BR_ROUND_OP NAME {
+        $$ = new FunctionTemplate();
+        $$->name = $3;
+        $$->paramNames.push_back($5);
+    }
+    | func_decl_left COMMA NAME {
+        $$ = $1;
+        $$->paramNames.push_back($3);
+    }
+
+optional_local:
+    | LOCAL
 
 opt_do:
     | DO
@@ -126,7 +169,31 @@ action:
     | PRINT BR_ROUND_OP expr BR_ROUND_CL {
             $$ = new Action{Print { $3 }};
         }
+    | RETURN expr {
+            $$ = new Action{Return{$2}};
+        }
+    | call {
+            $$ = new Action{*$1};
+        }
     ;
+
+call: NAME BR_ROUND_OP BR_ROUND_CL {
+            $$ = new FunctionCall();
+            $$->name = $1;
+        }
+    | function_call_left BR_ROUND_CL {
+            $$ = $1;
+        }
+
+function_call_left: NAME BR_ROUND_OP expr {
+            $$ = new FunctionCall{};
+            $$->name = $1;
+            $$->arguments.push_back($3);
+        }
+    | function_call_left COMMA expr {
+            $$ = $1;
+            $$->arguments.push_back($3);
+        }
 
 variable:
     NAME {
@@ -149,6 +216,7 @@ expr_numeric:
     | BR_ROUND_OP expr BR_ROUND_CL { $$ = $2; }
     | expr_numeric PLUS expr_numeric { $$ = BINARY_OP(Add, $1, $3); }
     | expr_numeric MINUS expr_numeric { $$ = BINARY_OP(Subtract, $1, $3); }
+    | call { $$ = new Expression(*$1); }
     ;
 
 %%

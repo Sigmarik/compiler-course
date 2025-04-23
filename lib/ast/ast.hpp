@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 #include <map>
 #include <memory>
 #include <optional>
@@ -10,10 +12,9 @@
 
 #include "symbol_table.h"
 
-struct Sequence;
-
 struct Function;
 struct Module;
+struct Sequence;
 
 struct Assignment;
 struct Branch;
@@ -60,7 +61,9 @@ class ASTNode {
 
     Position pos{};
 
-    virtual void accept(ASTVisitor& visitor) = 0;
+    virtual void accept(ASTVisitor& visitor) {
+        assert(false && "NON-VISITABLE!!!");
+    }
 };
 
 #define DEFAULT_VISIT \
