@@ -71,13 +71,20 @@ class ASTNode {
 
 struct FunctionTemplate;
 
+template <class T>
+T copyVariant(const T& var) {
+    T copy;
+    std::visit([&](const auto& node) { copy = node.copy(); }, var);
+    return copy;
+}
+
 struct Module : public ASTNode {
     std::vector<Function*> functions{};
     std::vector<FunctionTemplate*> templates{};
 
     Function* main = nullptr;
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
 };
 
 struct FunctionTemplate : public ASTNode {
@@ -88,6 +95,8 @@ struct FunctionTemplate : public ASTNode {
     std::vector<std::string> paramNames{};
     std::string name{};
     SymbolId entry = 0;
+
+    Function implement() const;
 };
 
 struct Function : public ASTNode {
@@ -99,7 +108,7 @@ struct Function : public ASTNode {
     std::string name{};
     SymbolId entry = 0;
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
 };
 
 struct Sequence : public ASTNode {
@@ -108,7 +117,9 @@ struct Sequence : public ASTNode {
 
     std::vector<Action*> actions{};
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
+
+    Sequence copy() const;
 };
 
 struct Return : public ASTNode {
@@ -117,14 +128,20 @@ struct Return : public ASTNode {
 
     Expression* expression = nullptr;
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
+
+    Return copy() const;
 };
 
 struct FunctionCall : public ASTNode {
     std::string name = "";
     std::vector<Expression*> arguments{};
 
-    DEFAULT_VISIT
+    SymbolId entry = 0;
+
+    DEFAULT_VISIT;
+
+    FunctionCall copy() const;
 };
 
 using ExprValueType = int;
@@ -136,14 +153,16 @@ struct Variable : public ASTNode {
     std::string name{};
     SymbolId entry{};
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
+
+    Variable copy() const;
 };
 
 struct BinaryOperator : public ASTNode {
     enum class Type { None, Add, Subtract, Equal };
     static const std::map<Type, std::string> kTypeNames;
 
-    BinaryOperator();
+    BinaryOperator() = default;
     BinaryOperator(Type type, Expression* left, Expression* right)
         : type(type), left(left), right(right) {}
 
@@ -152,7 +171,9 @@ struct BinaryOperator : public ASTNode {
     Expression* left{};
     Expression* right{};
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
+
+    BinaryOperator copy() const;
 };
 
 struct Constant : public ASTNode {
@@ -161,7 +182,9 @@ struct Constant : public ASTNode {
 
     ExprValueType value{};
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
+
+    Constant copy() const;
 };
 
 struct Assignment : public ASTNode {
@@ -171,7 +194,9 @@ struct Assignment : public ASTNode {
     Variable* var{};
     Expression* expr{};
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
+
+    Assignment copy() const;
 };
 
 struct Branch : public ASTNode {
@@ -184,7 +209,9 @@ struct Branch : public ASTNode {
     Sequence* true_branch{};
     Sequence* false_branch{};
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
+
+    Branch copy() const;
 };
 
 struct Print : public ASTNode {
@@ -193,5 +220,7 @@ struct Print : public ASTNode {
 
     Expression* expr{};
 
-    DEFAULT_VISIT
+    DEFAULT_VISIT;
+
+    Print copy() const;
 };
