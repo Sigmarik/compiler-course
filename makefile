@@ -53,6 +53,7 @@ objects/%.o: %.cpp
 
 include grammars.mk
 
+clean: clear
 clear: clear-grams
 	@rm -rf build
 	@rm -rf depends
