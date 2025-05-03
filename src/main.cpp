@@ -29,11 +29,6 @@ int main(int argc, char** argv) {
         SymbolResolveVisitor symbolResolver;
         root_module->accept(symbolResolver);
 
-        // {
-        //     Printer printer;
-        //     root_sequence->accept(printer);
-        // }
-
         {
             Printer printer;
             root_module->accept(printer);
@@ -48,10 +43,6 @@ int main(int argc, char** argv) {
         // {
         //     Interpreter visitor;
         //     root_module->accept(visitor);
-        // }
-        // {
-        //     Interpreter visitor;
-        //     root_sequence->accept(visitor);
         // }
     }
 }
