@@ -32,12 +32,12 @@ int main(int argc, char** argv) {
         {
             LLVMIRBuilder visitor(symbolResolver.getTypes());
             root_sequence->accept(visitor);
-            visitor.getModule().dump();
+            visitor.getModule().print(llvm::outs(), nullptr);
         }
 
-        {
-            Interpreter visitor;
-            root_sequence->accept(visitor);
-        }
+        // {
+        //     Interpreter visitor;
+        //     root_sequence->accept(visitor);
+        // }
     }
 }
