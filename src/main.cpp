@@ -25,9 +25,14 @@ int main(int argc, char** argv) {
 
     if (root_sequence == nullptr) {
         std::cout << "`root_sequence` is NULL" << std::endl;
+        return EXIT_FAILURE;
     } else {
         SymbolResolveVisitor symbolResolver;
         root_sequence->accept(symbolResolver);
+
+        if (!symbolResolver.successful()) {
+            return EXIT_FAILURE;
+        }
 
         {
             Printer printer;

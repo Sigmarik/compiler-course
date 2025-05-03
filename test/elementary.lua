@@ -1,7 +1,8 @@
 -- This is a comment
 local function main() do
     local x = 10
-    if x == 0 then
+    local condition = x == 0
+    if condition then
         print(0)
     else
         -- Declarations without `local` are fine, too.
