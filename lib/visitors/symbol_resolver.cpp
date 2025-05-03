@@ -64,18 +64,15 @@ void SymbolResolveVisitor::visit(Branch& node) {
 void SymbolResolveVisitor::visit(Print& node) { visitVariant(*node.expr); }
 
 void SymbolResolveVisitor::visit(Constant& node) {
-    std::visit(
-        [&](const auto& value) {
-            using Type = decltype(value);
-            if constexpr (std::is_same_v<Type, int>) {
-                m_current_type = DataType::Int;
-            }
-
-            if constexpr (std::is_same_v<Type, bool>) {
-                m_current_type = DataType::Bool;
-            }
-        },
-        node.value);
+    if (std::holds_alternative<bool>(node.value)) {
+        m_current_type = DataType::Bool;
+    } else if (std::holds_alternative<int>(node.value)) {
+        m_current_type = DataType::Int;
+    } else {
+        fail();
+        error(node.pos.line, node.pos.column, "Unknown constant type");
+        return;
+    }
 }
 
 void SymbolResolveVisitor::visit(Variable& node) {

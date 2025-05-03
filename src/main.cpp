@@ -20,31 +20,33 @@ int main(int argc, char** argv) {
 
     int status = yyparse();
     if (status) {
-        std::cout << "Failed to parse the file." << std::endl;
+        std::cerr << "Failed to parse the file." << std::endl;
+        return EXIT_FAILURE;
     }
 
     if (root_sequence == nullptr) {
-        std::cout << "`root_sequence` is NULL" << std::endl;
+        std::cerr << "`root_sequence` is NULL" << std::endl;
         return EXIT_FAILURE;
     } else {
         SymbolResolveVisitor symbolResolver;
         root_sequence->accept(symbolResolver);
 
         if (!symbolResolver.successful()) {
+            std::cerr << "Symbol resolver has failed\n";
             return EXIT_FAILURE;
         }
 
-        {
-            Printer printer;
-            root_sequence->accept(printer);
-        }
-
         // {
-        //     LLVMIRBuilder visitor(symbolResolver.getTypes());
-        //     root_sequence->accept(visitor);
-        //     visitor.finish();
-        //     visitor.getModule().print(llvm::outs(), nullptr);
+        //     Printer printer;
+        //     root_sequence->accept(printer);
         // }
+
+        {
+            LLVMIRBuilder visitor(symbolResolver.getTypes());
+            root_sequence->accept(visitor);
+            visitor.finish();
+            visitor.getModule().print(llvm::outs(), nullptr);
+        }
 
         // {
         //     Interpreter visitor;

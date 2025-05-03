@@ -28,18 +28,36 @@ void LLVMIRBuilder::visit(Assignment& node) {
     visitVariant(*node.expr);
 
     static auto int_type = llvm::Type::getInt32Ty(m_context);
+    static auto bool_type = llvm::Type::getInt8Ty(m_context);
 
     SymbolId id = node.var->entry;
 
     if (m_variables.find(id) == m_variables.end()) {
-        m_variables[id] = m_builder.CreateAlloca(int_type);
+        DataType type = m_table[id];
+        switch (type) {
+            case DataType::Int: {
+                m_variables[id] = m_builder.CreateAlloca(int_type);
+            } break;
+            case DataType::Bool: {
+                m_variables[id] = m_builder.CreateAlloca(bool_type);
+            } break;
+        }
     }
 
     m_builder.CreateStore(m_value, m_variables[node.var->entry]);
 }
 
-static llvm::Value* MakeConst(llvm::LLVMContext& context_, int x) {
+template <class T>
+llvm::Value* MakeConst(llvm::LLVMContext& context_, T x);
+
+template <>
+llvm::Value* MakeConst<int>(llvm::LLVMContext& context_, int x) {
     return llvm::ConstantInt::get(context_, llvm::APInt(32, x, true));
+}
+
+template <>
+llvm::Value* MakeConst<bool>(llvm::LLVMContext& context_, bool x) {
+    return llvm::ConstantInt::get(context_, llvm::APInt(1, x, true));
 }
 
 static llvm::Value* CreateLoad(llvm::IRBuilder<>* builder,
@@ -66,7 +84,9 @@ void LLVMIRBuilder::visit(Branch& node) {
 
     visitVariant(*node.condition);
 
-    auto cmp_value = m_builder.CreateICmpSGT(m_value, MakeConst(m_context, 0));
+    llvm::Type* bool_type = llvm::IntegerType::getInt8Ty(m_context);
+    auto cmp_value = m_builder.CreateICmpSGT(
+        m_value, llvm::ConstantInt::get(m_context, llvm::APInt(8, 0, true)));
 
     m_builder.CreateCondBr(cmp_value, true_branch, false_branch);
 
@@ -134,6 +154,12 @@ void LLVMIRBuilder::visit(BinaryOperator& node) {
         } break;
         case BinaryOperator::Type::Subtract: {
             m_value = m_builder.CreateSub(left_value, right_value);
+        } break;
+        case BinaryOperator::Type::Or: {
+            m_value = m_builder.CreateOr(left_value, right_value);
+        } break;
+        case BinaryOperator::Type::And: {
+            m_value = m_builder.CreateAnd(left_value, right_value);
         } break;
         case BinaryOperator::Type::Equal: {
             m_value = m_builder.CreateCmp(llvm::CmpInst::Predicate::ICMP_EQ,
