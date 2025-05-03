@@ -79,6 +79,11 @@ void LLVMIRBuilder::visit(Branch& node) {
     if (node.false_branch) node.false_branch->accept(*this);
 
     m_current_block = end_branch;
+
+    m_builder.SetInsertPoint(true_branch);
+    m_builder.CreateBr(end_branch);
+    m_builder.SetInsertPoint(false_branch);
+    m_builder.CreateBr(end_branch);
     m_builder.SetInsertPoint(end_branch);
 }
 
@@ -133,4 +138,9 @@ void LLVMIRBuilder::visit(BinaryOperator& node) {
                                           left_value, right_value);
         } break;
     }
+}
+
+void LLVMIRBuilder::finish() {
+    llvm::Type* i32_type = llvm::IntegerType::getInt32Ty(m_context);
+    m_builder.CreateRet(llvm::ConstantInt::get(i32_type, 0, true));
 }

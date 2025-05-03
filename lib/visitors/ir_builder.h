@@ -32,6 +32,8 @@ class LLVMIRBuilder : public ASTVisitor {
 
     llvm::Module& getModule() { return m_module; }
 
+    void finish();
+
    private:
     SymbolTable<DataType> m_table;
     llvm::IRBuilder<> m_builder;
