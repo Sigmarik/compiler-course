@@ -43,7 +43,7 @@ new Expression{BinaryOperator{  \
 }
 
 %token<integer> NUMBER "number"
-%left PLUS "+" MINUS "-" EQUAL "==" ASSIGN "="
+%left PLUS "+" MINUS "-" OR "or" AND "and" EQUAL "==" ASSIGN "="
 
 %token<string> NAME "name"
 %token IF "if"
@@ -53,6 +53,8 @@ new Expression{BinaryOperator{  \
 %token BR_CURLY_OP "{"
 %token BR_CURLY_CL "}"
 %token PRINT "print"
+%token TRUE "true"
+%token FALSE "false"
 
 %token DO "do"
 %token THEN "then"
@@ -138,6 +140,8 @@ variable:
 
 expr:
     expr_logics { $$ = $1; }
+    | expr_logics AND expr_logics { $$ = BINARY_OP(And, $1, $3); }
+    | expr_logics OR  expr_logics { $$ = BINARY_OP(Or,  $1, $3); }
 
 expr_logics:
     expr_numeric { $$ = $1; }
@@ -145,6 +149,8 @@ expr_logics:
 
 expr_numeric:
     NUMBER { $$ = new Expression{Constant{ $1 }}; }
+    | TRUE  { $$ = new Expression{Constant{ true }}; }
+    | FALSE { $$ = new Expression{Constant{ false }}; }
     | variable { $$ = new Expression{*$1}; }
     | BR_ROUND_OP expr BR_ROUND_CL { $$ = $2; }
     | expr_numeric PLUS expr_numeric { $$ = BINARY_OP(Add, $1, $3); }

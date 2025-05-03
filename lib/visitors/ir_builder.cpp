@@ -112,7 +112,9 @@ void LLVMIRBuilder::visit(Print& node) {
 }
 
 void LLVMIRBuilder::visit(Constant& node) {
-    m_value = MakeConst(m_context, node.value);
+    std::visit(
+        [&](const auto& value) { m_value = MakeConst(m_context, value); },
+        node.value);
 }
 
 void LLVMIRBuilder::visit(Variable& node) {

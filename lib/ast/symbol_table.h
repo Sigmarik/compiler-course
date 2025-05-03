@@ -2,8 +2,11 @@
 
 #include <map>
 
+using ConstValueType = std::variant<int, bool>;
+
 enum class DataType {
     Int = 0,
+    Bool,
 };
 
 using SymbolId = uint64_t;

@@ -24,7 +24,9 @@ void Interpreter::visit(Print& node) {
     std::cout << m_return << std::endl;
 }
 
-void Interpreter::visit(Constant& node) { m_return = node.value; }
+void Interpreter::visit(Constant& node) {
+    std::visit([&](const auto& value) { m_return = value; }, node.value);
+}
 
 void Interpreter::visit(Variable& node) { m_return = m_memory[node.entry]; }
 

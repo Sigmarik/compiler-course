@@ -41,7 +41,13 @@
 "+"                     { RETURN(PLUS); }
 "-"                     { RETURN(MINUS); }
 "=="                    { RETURN(EQUAL); }
+"or"                    { RETURN(OR); }
+"||"                    { RETURN(OR); }
+"and"                   { RETURN(AND); }
+"&&"                    { RETURN(AND); }
+
 "="                     { RETURN(ASSIGN); }
+
 "if"                    { RETURN(IF); }
 "else"                  { RETURN(ELSE); }
 "("                     { RETURN(BR_ROUND_OP); }
@@ -55,6 +61,9 @@
 "function"              { RETURN(FUNCTION); }
 "main"                  { RETURN(MAIN); }
 "local"                 { RETURN(LOCAL); }
+
+"true"                  { RETURN(TRUE); }
+"false"                 { RETURN(FALSE); }
 
 [a-zA-Z_][a-zA-Z_0-9]* { yylval.string = strdup(yytext); RETURN(NAME); }
 

@@ -65,8 +65,6 @@ struct Sequence : public ASTNode {
     DEFAULT_VISIT
 };
 
-using ExprValueType = int;
-
 struct Variable : public ASTNode {
     Variable() = default;
     Variable(std::string name) : name(name) {}
@@ -78,7 +76,15 @@ struct Variable : public ASTNode {
 };
 
 struct BinaryOperator : public ASTNode {
-    enum class Type { None, Add, Subtract, Equal };
+    enum class Type {
+        None,
+        Add,
+        Subtract,
+        Equal,
+        And,
+        Or,
+    };
+
     static const std::map<Type, std::string> kTypeNames;
 
     BinaryOperator();
@@ -95,9 +101,9 @@ struct BinaryOperator : public ASTNode {
 
 struct Constant : public ASTNode {
     Constant() = default;
-    Constant(ExprValueType value) : value(value) {}
+    Constant(ConstValueType value) : value(value) {}
 
-    ExprValueType value{};
+    ConstValueType value{};
 
     DEFAULT_VISIT
 };

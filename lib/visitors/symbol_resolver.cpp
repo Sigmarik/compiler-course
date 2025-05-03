@@ -45,6 +45,13 @@ void SymbolResolveVisitor::visit(Branch& node) {
 
     visitVariant(*node.condition);
 
+    if (m_current_type != DataType::Bool) {
+        fail();
+        error(node.pos.line, node.pos.column,
+              "Expected a boolean in branch condition");
+        return;
+    }
+
     enterScope((std::stringstream{} << "brn_true" << branch_id).str());
     if (node.true_branch) node.true_branch->accept(*this);
     exitScope();
@@ -57,7 +64,18 @@ void SymbolResolveVisitor::visit(Branch& node) {
 void SymbolResolveVisitor::visit(Print& node) { visitVariant(*node.expr); }
 
 void SymbolResolveVisitor::visit(Constant& node) {
-    m_current_type = DataType::Int;
+    std::visit(
+        [&](const auto& value) {
+            using Type = decltype(value);
+            if constexpr (std::is_same_v<Type, int>) {
+                m_current_type = DataType::Int;
+            }
+
+            if constexpr (std::is_same_v<Type, bool>) {
+                m_current_type = DataType::Bool;
+            }
+        },
+        node.value);
 }
 
 void SymbolResolveVisitor::visit(Variable& node) {
@@ -80,15 +98,31 @@ void SymbolResolveVisitor::visit(BinaryOperator& node) {
     visitVariant(*node.right);
     DataType right_type = m_current_type;
 
-    // Implicit type conversion should happen here
+    DataType exp_left = DataType::Int;
+    DataType exp_right = DataType::Int;
 
-    if (left_type != right_type) {
+    switch (node.type) {
+        case BinaryOperator::Type::Add:
+        case BinaryOperator::Type::Subtract: {
+            exp_left = exp_right = DataType::Int;
+            m_current_type = DataType::Int;
+        } break;
+        case BinaryOperator::Type::Equal: {
+            exp_left = exp_right = DataType::Int;
+            m_current_type = DataType::Bool;
+        } break;
+        case BinaryOperator::Type::And:
+        case BinaryOperator::Type::Or: {
+            exp_left = exp_right = DataType::Bool;
+            m_current_type = DataType::Bool;
+        } break;
+    }
+
+    if (left_type != exp_left || right_type != exp_right) {
         fail();
         error(node.pos.line, node.pos.column,
               "Cannot binary combine values of different types.");
     }
-
-    m_current_type = right_type;
 }
 
 SymbolId SymbolResolveVisitor::findOrCreate(const std::string& name) {

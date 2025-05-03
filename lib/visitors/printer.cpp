@@ -60,7 +60,9 @@ void Printer::visit(Print& node) {
 
 void Printer::visit(Constant& node) {
     indent(m_indentation);
-    std::cout << "Const " << node.value << '\n';
+    std::visit(
+        [&](const auto& value) { std::cout << "Const " << value << '\n'; },
+        node.value);
 }
 
 void Printer::visit(Variable& node) {
