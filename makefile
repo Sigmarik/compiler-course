@@ -1,11 +1,13 @@
 include paths.mk
 
+LLVM_CONFIG ?= llvm-config-18
+
 CXXFLAGS = -I . -I $(FLEX_DIR)/$(GRAM_DIR) -I $(BISON_DIR)/$(GRAM_DIR) \
 	-I $(GRAM_DIR) -I $(SRC_DIR) -I $(LIB_DIR) -isystem $(EXTERN_DIR)/flex/src \
-	-isystem /lib/llvm-18/include -ggdb
+	$(shell $(LLVM_CONFIG) --cxxflags) -ggdb
 # -DFLEX_DEBUG_TOKENS
 
-LIBRARIES = /lib/llvm-18/lib/libLLVM-18.so
+LIBRARIES = $(shell $(LLVM_CONFIG) --link-shared --libs)
 
 BOLD = \\033[1m
 STYLE_RESET = \\033[0m
