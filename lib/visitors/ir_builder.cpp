@@ -96,7 +96,7 @@ void LLVMIRBuilder::visit(Print& node) {
     auto printf_function_type = llvm::FunctionType::get(
         llvm::Type::getInt32Ty(m_context), {pointer_type}, true);
 
-    auto printf_function = llvm::Function::Create(
+    static auto printf_function = llvm::Function::Create(
         printf_function_type, llvm::Function::ExternalLinkage, "printf",
         m_module);
 
@@ -116,7 +116,7 @@ void LLVMIRBuilder::visit(Constant& node) {
 }
 
 void LLVMIRBuilder::visit(Variable& node) {
-    CreateLoad(&m_builder, m_variables[node.entry]);
+    m_value = CreateLoad(&m_builder, m_variables[node.entry]);
 }
 
 void LLVMIRBuilder::visit(BinaryOperator& node) {
