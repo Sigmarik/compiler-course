@@ -1,5 +1,6 @@
 #include "ir_builder.h"
 
+#include <iostream>
 #include <sstream>
 
 LLVMIRBuilder::LLVMIRBuilder(const SymbolTable<DataType>& table)
@@ -171,4 +172,39 @@ void LLVMIRBuilder::visit(BinaryOperator& node) {
 void LLVMIRBuilder::finish() {
     llvm::Type* i32_type = llvm::IntegerType::getInt32Ty(m_context);
     m_builder.CreateRet(llvm::ConstantInt::get(i32_type, 0, true));
+}
+
+void writeModuleToFile(llvm::Module* module) {
+    std::string error;
+    std::string targetTriple = llvm::sys::getDefaultTargetTriple();
+    const llvm::Target* target =
+        llvm::TargetRegistry::lookupTarget(targetTriple, error);
+    llvm::TargetOptions options;
+    llvm::Reloc::Model relocModel = llvm::Reloc::DynamicNoPIC;
+    llvm::CodeModel::Model codeModel = llvm::CodeModel::Medium;
+    llvm::CodeGenOptLevel optLevel = *llvm::CodeGenOpt::getLevel(1);
+
+    llvm::TargetMachine* targetMachine = target->createTargetMachine(
+        targetTriple, "generic", "", options, relocModel, codeModel, optLevel);
+
+    llvm::legacy::PassManager pass;
+    llvm::CodeGenFileType fileType = llvm::CodeGenFileType::ObjectFile;
+
+    std::error_code EC;
+    std::string outputFilename = "program.o";
+    llvm::raw_fd_ostream outputFile(outputFilename, EC, llvm::sys::fs::OF_None);
+    if (EC) {
+        std::cerr << EC.message() << std::endl;
+        return;
+    }
+
+    if (targetMachine->addPassesToEmitFile(pass, outputFile, nullptr,
+                                           fileType)) {
+        return;
+    }
+
+    pass.run(*module);
+    outputFile.flush();
+
+    outputFile.close();
 }

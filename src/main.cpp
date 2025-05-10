@@ -46,6 +46,7 @@ int main(int argc, char** argv) {
             root_sequence->accept(visitor);
             visitor.finish();
             visitor.getModule().print(llvm::outs(), nullptr);
+            writeModuleToFile(&visitor.getModule());
         }
 
         // {

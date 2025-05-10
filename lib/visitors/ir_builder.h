@@ -44,3 +44,5 @@ class LLVMIRBuilder : public ASTVisitor {
     llvm::Value* m_value = nullptr;
     SymbolTable<llvm::AllocaInst*> m_variables;
 };
+
+void writeModuleToFile(llvm::Module* module);
